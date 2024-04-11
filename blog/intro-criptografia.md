@@ -260,11 +260,10 @@ Imagineremos que tienes a la mano el archivo ISO de Ubuntu 20.04 que se puede de
 El código fuente para poder calcular el hash es el que sigue:
 
 ```python
-cat calcular_hash_sha256.py
 import argparse
 import hashlib
 
-def calcular_hash_sha1(ruta_archivo):
+def calcular_hash_sha256(ruta_archivo):
     """
     Calcula el hash SHA-256 de un archivo.
 
@@ -294,7 +293,7 @@ def main():
         return
 
     # Calcular el hash SHA-256 del archivo
-    hash_sha256 = calcular_hash_sha1(args.ruta_archivo)
+    hash_sha256 = calcular_hash_sha256(args.ruta_archivo)
 
     # Imprimir el hash SHA-256
     print(f"Hash SHA-256 del archivo {args.ruta_archivo}: {hash_sha256}")
@@ -308,7 +307,7 @@ Por favor, presta atención a algunos detalles de la implementación:
 * Estamos empleando un [gestor de contexto](https://python-intermedio.readthedocs.io/es/latest/context_managers.html)
 para abrir el archivo y cerrarlo automáticamente al final.
 * El archivo original se esta leyendo en bloques de 4096 bytes a la vez y en modo binario.
-* Estamos creando un objeto __iterator__ a partir de una función anónima para poder emplear un bucle `for`
+* Estamos creando un objeto [iterador](https://python-intermedio.readthedocs.io/es/latest/generators.html?highlight=iterador#iterador) a partir de una función anónima para poder emplear un bucle `for`
 * La función `sha256` del módulo `hashlib` devuelve un objeto que permite computar parcialmente el hash a partir
 de la función de hash seleccionada que en nuestro caso es SHA-256. Internamente, por razones de eficiencia Python
 está empleando a su vez funciones criptográficas de la librería de código abierto [OpenSSL](https://www.openssl.org/).
@@ -363,3 +362,157 @@ sys     0m1.465s
 
 Acá lo importante es hacernos una idea de la diferencia de tiempos ya que en este caso el cómputo del hash se completó aproximadamente
 unas 4 veces más rápido.
+
+## ¿Cómo se ve una implementación de la funcion SHA-256 en Python puro?
+
+Más o menos así:
+
+```python
+#!/usr/bin/python
+__author__ = 'Thomas Dixon'
+__license__ = 'MIT'
+
+import copy
+import struct
+import sys
+
+
+def new(m=None):
+    return sha256(m)
+
+class sha256(object):
+    _k = (0x428a2f98L, 0x71374491L, 0xb5c0fbcfL, 0xe9b5dba5L,
+          0x3956c25bL, 0x59f111f1L, 0x923f82a4L, 0xab1c5ed5L,
+          0xd807aa98L, 0x12835b01L, 0x243185beL, 0x550c7dc3L,
+          0x72be5d74L, 0x80deb1feL, 0x9bdc06a7L, 0xc19bf174L,
+          0xe49b69c1L, 0xefbe4786L, 0x0fc19dc6L, 0x240ca1ccL,
+          0x2de92c6fL, 0x4a7484aaL, 0x5cb0a9dcL, 0x76f988daL,
+          0x983e5152L, 0xa831c66dL, 0xb00327c8L, 0xbf597fc7L,
+          0xc6e00bf3L, 0xd5a79147L, 0x06ca6351L, 0x14292967L,
+          0x27b70a85L, 0x2e1b2138L, 0x4d2c6dfcL, 0x53380d13L,
+          0x650a7354L, 0x766a0abbL, 0x81c2c92eL, 0x92722c85L,
+          0xa2bfe8a1L, 0xa81a664bL, 0xc24b8b70L, 0xc76c51a3L,
+          0xd192e819L, 0xd6990624L, 0xf40e3585L, 0x106aa070L,
+          0x19a4c116L, 0x1e376c08L, 0x2748774cL, 0x34b0bcb5L,
+          0x391c0cb3L, 0x4ed8aa4aL, 0x5b9cca4fL, 0x682e6ff3L,
+          0x748f82eeL, 0x78a5636fL, 0x84c87814L, 0x8cc70208L,
+          0x90befffaL, 0xa4506cebL, 0xbef9a3f7L, 0xc67178f2L)
+    _h = (0x6a09e667L, 0xbb67ae85L, 0x3c6ef372L, 0xa54ff53aL,
+          0x510e527fL, 0x9b05688cL, 0x1f83d9abL, 0x5be0cd19L)
+    _output_size = 8
+    
+    blocksize = 1
+    block_size = 64
+    digest_size = 32
+    
+    def __init__(self, m=None):        
+        self._buffer = ''
+        self._counter = 0
+        
+        if m is not None:
+            if type(m) is not str:
+                raise TypeError, '%s() argument 1 must be string, not %s' % (self.__class__.__name__, type(m).__name__)
+            self.update(m)
+        
+    def _rotr(self, x, y):
+        return ((x >> y) | (x << (32-y))) & 0xFFFFFFFFL
+                    
+    def _sha256_process(self, c):
+        w = [0]*64
+        w[0:16] = struct.unpack('!16L', c)
+        
+        for i in range(16, 64):
+            s0 = self._rotr(w[i-15], 7) ^ self._rotr(w[i-15], 18) ^ (w[i-15] >> 3)
+            s1 = self._rotr(w[i-2], 17) ^ self._rotr(w[i-2], 19) ^ (w[i-2] >> 10)
+            w[i] = (w[i-16] + s0 + w[i-7] + s1) & 0xFFFFFFFFL
+        
+        a,b,c,d,e,f,g,h = self._h
+        
+        for i in range(64):
+            s0 = self._rotr(a, 2) ^ self._rotr(a, 13) ^ self._rotr(a, 22)
+            maj = (a & b) ^ (a & c) ^ (b & c)
+            t2 = s0 + maj
+            s1 = self._rotr(e, 6) ^ self._rotr(e, 11) ^ self._rotr(e, 25)
+            ch = (e & f) ^ ((~e) & g)
+            t1 = h + s1 + ch + self._k[i] + w[i]
+            
+            h = g
+            g = f
+            f = e
+            e = (d + t1) & 0xFFFFFFFFL
+            d = c
+            c = b
+            b = a
+            a = (t1 + t2) & 0xFFFFFFFFL
+            
+        self._h = [(x+y) & 0xFFFFFFFFL for x,y in zip(self._h, [a,b,c,d,e,f,g,h])]
+        
+    def update(self, m):
+        if not m:
+            return
+        if type(m) is not str:
+            raise TypeError, '%s() argument 1 must be string, not %s' % (sys._getframe().f_code.co_name, type(m).__name__)
+        
+        self._buffer += m
+        self._counter += len(m)
+        
+        while len(self._buffer) >= 64:
+            self._sha256_process(self._buffer[:64])
+            self._buffer = self._buffer[64:]
+            
+    def digest(self):
+        mdi = self._counter & 0x3F
+        length = struct.pack('!Q', self._counter<<3)
+        
+        if mdi < 56:
+            padlen = 55-mdi
+        else:
+            padlen = 119-mdi
+        
+        r = self.copy()
+        r.update('\x80'+('\x00'*padlen)+length)
+        return ''.join([struct.pack('!L', i) for i in r._h[:self._output_size]])
+        
+    def hexdigest(self):
+        return self.digest().encode('hex')
+        
+    def copy(self):
+        return copy.deepcopy(self)
+```
+
+Como puedes ver, no es una implementación trivial. Por lo general -y siguiendo con el ejemplo de MD5-, en el mundo de la seguridad informática,
+estos algortimos son presentados en congresos académicos como [CRYPTO 1991](https://www.iacr.org/cryptodb/data/conf.php?year=1991&venue=crypto)
+y buscan ser ampliamente difundidos para poder detectar vulnerabilidades en el mismo diseño.
+
+El diseñador de este algoritmo, [Ronald Rivest](https://en.wikipedia.org/wiki/Ron_Rivest), que es la "R" de [RSA](https://www.rsa.com/), lo
+difundió a través de un memo recogido en el [RFC 1321](https://www.rfc-es.org/rfc/rfc1321-es.txt) publicado en 1992 y tan pronto como en 1993
+ya empezaron a aparecer [varios](https://link.springer.com/content/pdf/10.1007/3-540-48285-7_26.pdf) [otros](https://ftp.arnes.si/packages/crypto-tools/rsa.com/cryptobytes/crypto2n2.pdf.gz) 
+[papers](https://web.archive.org/web/20090521001714/http://www.infosec.sdu.edu.cn/uploadfile/papers/How%20to%20Break%20MD5%20and%20Other%20Hash%20Functions.pdf) 
+señalando las vulnerabilidades y como implementar ataques.
+
+Contar con implementaciones de código abierto de funciones criptográficas y herramientas de seguridad es importante ya que, a pesar de que pueden [ser explotadas](https://nvd.nist.gov/vuln/detail/CVE-2020-22916) ingeniosamente por atacantes que incluyen código malicioso en proyectos infiltrándose en el equipo de mantenedores como pasó como [las herramientas XZ](https://es.wikipedia.org/wiki/XZ_Utils), es la propia naturaleza abierta y la capacidad de escrutinio del opensource lo que permitió a [Andrés Freund](https://www.linkedin.com/in/andres-freund/), un desarrollador alemán del equipo de [Postgres](https://www.postgresql.org/) y empleado de Microsoft a [descubrir la puerta trasera](https://en.wikipedia.org/wiki/XZ_Utils_backdoor) que había sido implantada años antes y que podría haber facilitado muy serios ciberataques de escala global como lo reportó la prensa [internacional](https://arstechnica.com/security/2024/04/what-we-know-about-the-xz-utils-backdoor-that-almost-infected-the-world/) y [nacional](https://elcomercio.pe/tecnologia/ciberseguridad/como-un-ingeniero-evito-un-ciberataque-global-al-notar-que-un-programa-demoraba-medio-segundo-mas-en-cargar-linux-seguridad-informatica-vulnerabilidad-noticia/).
+
+## Repaso, conclusiones y cierre
+
+### Repaso
+
+Lo más importante que debes recordar de este artículo es que la criptografía ayuda a proteger la información contra actores potencialmente maliciosos y esto se logra empleando distintos algoritmos que transforman los datos de forma reversible pero también irreversible. Ambas cosas son útiles y tienen una gran variedad de aplicaciones en un gran número de casos de uso. 
+
+Hay 3 tipos de algoritmos critográficos que nos interesan más como desarrolladores: aquellos que usan claves simétricas y son reversibles, como cifrar un archivo empleando un password, aquellos que usan claves asimétricas, como una pareja de claves pública y privada que es la base de las firmas y certificados digitales como los que protegen el tráfico web o las conexiones por SSH y las funciones hash que nos permiten verificar la integridad de los archivos o comprobar contraseñas almacenándolas en un formato cifrado con técnicas que mitigan el riesgo de ataques.
+
+### Conclusiones
+
+* La librería estándar de Python incluye implementaciones razonablemente eficientes de las principales funciones de hashing integrandose con librerías (bibliotecas) como OpenSSL.
+* El cómputo de sumas de verificación con funciones hash se puede realizar de manera incremental sobre archivos bastante grandes.
+* La implementación de estas funciones no es algo trivial, exige mucha investigación y diseño y se beneficia del exhaustivo escrutinio de los investigadores en ciberseguridad y la implementación por parte de proyectos de código abierto que permiten que el código sea auditable.
+
+### Cierre
+
+Si no conocías mucho de estos temas o si ya te estabas olvidando de lo que aprendiste alguna vez, espero que este artículo te haya servido como una introducción
+ó te haya ayudado a recordar algunos de estos conceptos que hoy por hoy son tan fundamentales.
+
+En un siguiente artículo explicaremos como emplear funciones hash para almacenar contraseñas en bases de datos con un nivel de seguridad adecuada. 
+**SPOILER:** No es tan sencillo como aplicar estas funciones sino que hay que combinarlas con otras técnicas y aplicarlas cientos o miles de veces sobre la salida de ellas mismas para aumentar el costo computacional de un eventual ataque por fuerza bruta.
+
+
+
