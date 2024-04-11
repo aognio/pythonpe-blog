@@ -18,13 +18,15 @@ no es simplemente decirte que paquetes utilizar y que te vueltas un experto en c
 que, por el contrario, entiendas los conceptos más básicos que te permitan apreciar y evaluar de
 forma más efectiva y ¿porque no decirlo? profesional el nivel de seguridad de tu código.
 
-## ¿Qué es la criptografía? (versión para desarrolladores apurados)
+## Algunos conceptos básicos y un poco de contexto
+
+### ¿Qué es la criptografía? (versión para desarrolladores apurados)
 
 Es la disciplina que estudia las técnicas para transformar la información desde su formato original
 a otro que permita protegerla del acceso por parte de usuarios no autorizados de forma que se pueda
 prevenir cualquier adulteración y certificar su procedencia.
 
-## ¿Qué objetivos buscamos con el uso de la criptografía?
+### ¿Qué objetivos buscamos con el uso de la criptografía?
 
 Por lo general buscamos lograr 3 cosas con la criptografía:
 
@@ -34,7 +36,7 @@ personas que deban poder hacerlo según la voluntad del propietario o creador de
 * **Irrenunciabilidad:** Comprobar que las partes que participan en una trasacción son efectivamente
 aquellas que dicen serlo y al mismo tiempo evitar que puedan negarlo.
 
-## Principales aplicaciones
+### Principales aplicaciones
 
 * **Seguridad informática:** Proteger datos de usuarios almacenandándo de forma cifrada (encriptada) en
 medios sistemas de archivos o bases de datos, proteger las comunicaciones en comunicaciones en línea,
@@ -50,7 +52,7 @@ comercial, algo que [ya](https://andina.pe/agencia/noticia-minsur-utiliza-blockc
 [a](https://es.cointelegraph.com/news/peruvian-vanilla-farm-adopts-blockchain-to-improve-traceability-and-quality) [ocurrir](https://medium.com/@stamping.io/certificado-de-vacunaci%C3%B3n-covid-del-per%C3%BA-utilizastamping-io-para-evidencias-blockchain-9b57dee42228)
 en el Perú, sobretodo en los sectores mineros, agroindustriales y salud soportando procesos de trazabilidad de documentos y transacciones.
 
-## Regulaciones y normas legales que exigen el uso de la criptografía en el Perú
+### Regulaciones y normas legales que exigen el uso de la criptografía en el Perú
 
 Como la mayoría de paises del mundo, el Perú ya tiene en vigencia regulaciones y leyes que exigen el uso
 de la criptografía en las aplicaciones y por lo tanto afectan nuestro trabajo diario.
@@ -66,7 +68,7 @@ del 2007 que no solo menciona técnicas criptográficas como las que estamos bus
 sino también buenas prácticas sobre otros aspectos de la seguridad informática y la continuidad del negocio como la 
 gestión de las brechas de seguridad, el reporte de vulnerabilidades y el análisis de riesgos.
 
-## ¿Cómo te impacta como desarrollador?
+### ¿Cómo te impacta como desarrollador?
 
 * Requiriendo que sepas implementar correctamente mecanismos de autenticación y autorización.
 * Requiriendo que sepas como almacenar adecuadamente contraseñas y otros secretos en bases de datos.
@@ -75,5 +77,35 @@ sin que los mismos sean parte de tu código fuente y mucho menos sean incluidos 
 control de versiones.
 * Requiriendo que puedas utilizar sumas de verificación y firmas digitales en tus procesos de IT para
 garantizar la integridad y no repudio de los datos.
- 
- 
+
+### Tipos de criptografía que nos interesan
+
+* **Criptografía de clave simétrica:** Se utiliza una única clave para cifrar y descifrar la información.
+Es eficiente para comunicaciones donde las partes confían entre sí.
+* **Criptografía de clave asimétrica:** Se utilizan dos claves diferentes, una pública y otra privada.
+La clave pública se utiliza para cifrar la información, y la clave privada para descifrarla.
+Es ideal para comunicaciones donde no hay confianza previa entre las partes.
+* **Funciones hash:** Se utilizan para generar un resumen digital de la información.
+Este resumen permite verificar la integridad de la información sin necesidad de descifrarla.
+
+### A ver explícamelo pero más facilito y con ejemplos
+
+* Cuando colocas una clave en un archivo comprimido con un programa como WinZip estas utilizando una clave simétrica
+porque todos los que sepan esa clave podrán revertir el proceso de cifrado y obtener los archivos originales.
+* Cuando utilizas PGP o GPG en tus correos o creas una billetera crypto estas utilizando una clave asimétrica.
+De hecho, en el caso de las criptomonedas la dirección de la billetera se deriva de la llave pública.
+* Otro ejemplo de es criptografía de clave asimétrica nos debería resultar familiar de cuando descargamos paquetes
+de Linux desde un repositorio autorizado y conocido, ya que primero hay que descargar y registrar una llave pública
+que permite verificar que los paquetes provienen de una fuente oficial de la distribución o del proyecto opensource
+y no de una tercera parte que podría incluir en ellos código malicioso.
+* Finalmente, un ejemplo muy conocido del uso de funciones de hashes para realizar sumas de verificación que te
+debería resultar familiar, consiste en descargar una imagen ISO que nos permite instalar un sistema operativo como
+Windows o alguna distribución de Linux empleando una memoria USB. Como el archivo es grande y puede tener varios
+gigabytes el riesgo de que la información este corrupta por problemas en la descarga aumenta y antes de perder tiempo
+intentando hacer la instalación con una imagen producto de una descarga fallida calculamos la suma de verificación
+[MD5](https://es.wikipedia.org/wiki/MD5) ó [SHA-256](https://es.wikipedia.org/w/index.php?title=Secure_Hash_Algorithm&useskin=vector)
+y confirmamos la integridad del archivo descargado comprobando que tenemos la descarga correcta.
+
+## Ahora si manos a la obra con un poco de Python
+
+
