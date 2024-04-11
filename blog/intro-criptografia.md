@@ -106,6 +106,30 @@ intentando hacer la instalación con una imagen producto de una descarga fallida
 [MD5](https://es.wikipedia.org/wiki/MD5) ó [SHA-256](https://es.wikipedia.org/w/index.php?title=Secure_Hash_Algorithm&useskin=vector)
 y confirmamos la integridad del archivo descargado comprobando que tenemos la descarga correcta.
 
+### Algunas ideas importantes adicionales antes de pasar a programar
+
+* Cifrado o encriptación es lo mismo. Según la [Real Academia de la Lengua Española](https://www.rae.es/)
+los términos [cifrar](https://dle.rae.es/encriptar) y [encriptar](https://dle.rae.es/cifrar) son sinónimos y
+la principal acepción que aparece listada es bastante clara: _Transcribir en guarismos, letras o símbolos, de acuerdo
+con una clave, un mensaje o texto cuyo contenido se quiere proteger_.  
+* Los datos en binario no necesariamente estan cifrados en el sentido de que no se han transformado para protegerlos,
+simplemente estan representados en su forma digital más sencilla posible empleando cifras binarias como el 0 y el 1.
+* La codificación de secuencias de datos binarios en formatos que simplemente los cambian de base como
+[Base 64](https://es.wikipedia.org/wiki/Base64) tampoco constituyen una forma de criptografía y se pueden revertir
+de inmediato de manera directa ya se trata simplemente de un sistema de numeración posicional que utiliza los caracteres
+imprimibles de la tabla ASCII original para definir un alfabeto con símbolos que se emplean para representar las cifras
+del 1 al 64. Lo mismo sucede al representar datos binarios en formato [hexadecimal](https://es.wikipedia.org/wiki/Hexadecimal):
+podría tratarse de información cifrada o en **texto plano** que es como se llama a la información que no esta siendo
+cifrada para ser protegida.
+* En criptografía un **secreto** es cualquier pieza de información que justamente, como su nombre lo dice, debe mantenerse
+en secreto por parte de sus usuarios y no debería ser compartida con terceras personas, salvo en el caso de los llamados
+secretos compartidos en donde dos o más partes utilizan el mismo secreto para verificar algo. Esto ocurre on los códigos de
+6 u 8 dígitos empleados la autenticación por segundo factor empleando OTPs o contraseñas descartables en cuyo caso el mismo
+secreto o semilla está almacenado tanto por el dispositivo que genera el código como en la infraestructura en la nube de
+la página web o servicio en linea que lo verifica.
+* Muchos de los algoritmos criptográficos hacen uso de números aleatorios o [pseudo-aleatorios](https://es.wikipedia.org/wiki/N%C3%BAmero_pseudoaleatorio)
+ya que estos son la entrada para general llaves o actuan como las claves en los algorítmos de cifrado simétrico. 
+
 ## Ahora si manos a la obra con un poco de Python
 
 
