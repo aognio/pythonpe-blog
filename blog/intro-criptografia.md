@@ -340,8 +340,8 @@ archivo ISO original y ejecuté el script con Python 3.11.3 en una PC bastante m
 corriendo a 3.70 Ghz corriendo en Ubuntu 22.04 en WSL2 y me demoró casi 5 minutos:
 
 ```
-time python calcular_hash_sha256.py /mnt/c/Users/gnrfan/Downloads/ubuntu-22.04.4-desktop-amd64.iso
-Hash SHA-1 del archivo /mnt/c/Users/gnrfan/Downloads/ubuntu-22.04.4-desktop-amd64.iso: 071d5a534c1a2d61d64c6599c47c992c778e08b054daecc2540d57929e4ab1fd
+time python calcular_hash_sha256.py ubuntu-22.04.4-desktop-amd64.iso
+Hash SHA-1 del archivo ubuntu-22.04.4-desktop-amd64.iso: 071d5a534c1a2d61d64c6599c47c992c778e08b054daecc2540d57929e4ab1fd
 
 real    4m59.383s
 user    0m29.578s
@@ -353,7 +353,7 @@ El comando `sha256sum` que viene incluido con Ubuntu permite realizar el proceso
 
 ```sh
 time sha256sum ubuntu-22.04.4-desktop-amd64.iso
-071d5a534c1a2d61d64c6599c47c992c778e08b054daecc2540d57929e4ab1fd  /mnt/c/Users/gnrfan/Downloads/ubuntu-22.04.4-desktop-amd64.iso
+071d5a534c1a2d61d64c6599c47c992c778e08b054daecc2540d57929e4ab1fd  ubuntu-22.04.4-desktop-amd64.iso
 
 real    1m16.814s
 user    0m22.480s
@@ -480,6 +480,8 @@ class sha256(object):
         return copy.deepcopy(self)
 ```
 
+Este código [ha sido tomado](https://github.com/thomdixon/pysha2/blob/master/sha2/sha256.py) el repositorio [https://github.com/thomdixon/pysha2] de [](https://github.com/thomdixon).
+
 Como puedes ver, no es una implementación trivial. Por lo general -y siguiendo con el ejemplo de MD5-, en el mundo de la seguridad informática,
 estos algortimos son presentados en congresos académicos como [CRYPTO 1991](https://www.iacr.org/cryptodb/data/conf.php?year=1991&venue=crypto)
 y buscan ser ampliamente difundidos para poder detectar vulnerabilidades en el mismo diseño.
@@ -511,8 +513,9 @@ Hay 3 tipos de algoritmos critográficos que nos interesan más como desarrollad
 Si no conocías mucho de estos temas o si ya te estabas olvidando de lo que aprendiste alguna vez, espero que este artículo te haya servido como una introducción
 ó te haya ayudado a recordar algunos de estos conceptos que hoy por hoy son tan fundamentales.
 
-En un siguiente artículo explicaremos como emplear funciones hash para almacenar contraseñas en bases de datos con un nivel de seguridad adecuada. 
-**SPOILER:** No es tan sencillo como aplicar estas funciones sino que hay que combinarlas con otras técnicas y aplicarlas cientos o miles de veces sobre la salida de ellas mismas para aumentar el costo computacional de un eventual ataque por fuerza bruta.
+En un siguiente artículo explicaremos como emplear funciones hash para almacenar contraseñas en bases de datos con un nivel de seguridad adecuada.
+
+**SPOILER:** No es tan sencillo como computar directamente una de estas funciones y ya sino que hay que combinarlas con otras técnicas y aplicarlas cientos o miles de veces sobre la salida de ellas mismas para aumentar el costo computacional de un eventual ataque por fuerza bruta.
 
 
 
