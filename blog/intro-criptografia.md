@@ -132,4 +132,44 @@ ya que estos son la entrada para general llaves o actuan como las claves en los 
 
 ## Ahora si manos a la obra con un poco de Python
 
+Las [funciones Hash](https://es.wikipedia.org/wiki/Funci%C3%B3n_hash) se inventaron originalmente para poder indexar y buscar información dentro de estructuras de datos en memoria de forma que las características de los datos como los valores más frecuentes no creen una distribución poco uniforme pero rápidamente encontraron otros usos, especialmente para comparar datos de forma más simple sin tener que comparar todo el contenido de una cadena o archivo sino solo los resultados devueltos por la función hash, que dado que se producen por un proceso determinístico sin aleatoriedad, siempre van a dar el mismo resultado.
 
+Cuando empecé a aprender un poco de estos temas rápidamente confirmé una intuición matemática: ¿si el conjunto de valores de entrada es infinito pero el conjunto de valores de salida es finito no vamos a obtener valores repetidos? Sí. Cualquier función de hash puede tener teóricamente infinitos valores que devuelvan el mismo resultado y por lo tanto, infinitas **colisiones** como se llaman a los casos en donde el resultado es idéntico.
+
+La gracia está en que, en la práctica, los algoritmos de hashing que usamos emplean internamente series de matrices que descomponen los bits de la entrada y los mandan por distintos "circuitos" que reducen muy significativamente el riesgo de encontrar una colisión en nuestro dia a dia. Cuando un cierto algoritmo empieza a tener un número potencialmente problemático de colisiones para usos reales del dia a dia, se suele dejar de utilizar y es reemplazado por otro más robusto, asi esto implique hacer más cálculos y por lo tanto gastar un poco más de energía y dinero para computar el resultado.
+
+Es asi, que por ejemplo, a pesar de que el nombre MD5 aún suena y es popular, hoy por hoy en pleno 2024 se recomienda en su lugar el uso de SHA-256 ó SHA-512 para sumas de verificación que comprueban la integridad de archivos. El algoritmo [BLAKE2b](https://en.wikipedia.org/wiki/BLAKE_(hash_function)) es otro un poco más nuevo que ofrece un buen balance entre velocidad (complejidad del cómputo) y seguridad (probabilidad de obtener una colisión).
+
+### Computando el hash de una simple cadenita de texto
+
+La librería estándar de Python incluye implementaciones para las principales funciones hash en el [módulo hashlib]().
+
+A continuación una pequeña demo de como usar estas funciones:
+
+```python
+import hashlib
+
+cadenas = ["", "Hola mundo"]
+
+for cadena in cadenas:
+    print(f"Cadena: {cadena}")
+    
+    # Calcular hashes
+    hash_md5 = hashlib.md5(cadena.encode()).hexdigest()
+    hash_sha1 = hashlib.sha1(cadena.encode()).hexdigest()
+    hash_sha256 = hashlib.sha256(cadena.encode()).hexdigest()
+    hash_sha512 = hashlib.sha512(cadena.encode()).hexdigest()
+    hash_blake2b = hashlib.blake2b(cadena.encode()).hexdigest()
+    
+    # Imprimir resultados
+    print(f"MD5: {hash_md5}")
+    print(f"SHA-1: {hash_sha1}")
+    print(f"SHA-256: {hash_sha256}")
+    print(f"SHA-512: {hash_sha512}")
+    print(f"Blake2b: {hash_blake2b}")
+    print()
+```
+
+Nótese que en todos los casos utilizamos el método `hexdigest` para obtener una representación en forma de cadena de texto con dígitos hexadecimales ya que la salida en si de la función es una secuencia de datos binaria. El formato hexadecimal es baste cómodo para inspeccionar secuencias binarias ya que cada cifra representa un [nibble](https://es.wikipedia.org/wiki/Nibble) o "medio byte", es decir, 4 ceros o unos de los 8 que componen un byte. Sin embargo, la solida podría representarse también en formato binario, octal y otras representaciones populares como [Base58](https://bitcoinwiki.org/wiki/base58) que es lo que usa Bitcoin para mejorar la legibilidad de las direcciones de las billeteras evitando costosos errores (como potencialmente transferir a la dirección equivocada) al eliminar símbolos que se pueden confundir entre si como al `0` y la `O` (letra "O" mayúscula) o el `1` y la letra `l` (letra "L" minúscula).
+
+### Verificando un archivo .iso
